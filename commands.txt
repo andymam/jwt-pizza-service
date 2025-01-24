@@ -1,0 +1,27 @@
+From jwt-pizza:
+
+    npm run dev
+
+    Starts frontend. Press o then enter to open in browser.
+
+
+From forked-jwt-pizza-service/service:
+
+    node index.js
+
+    Starts backend.
+
+
+
+In development environment, use:
+
+    git pull
+
+    After syncing repo on GitHub
+
+
+In Sources tab in browser debugger:
+
+    command + pizza
+
+    Allows you to search for a file to open and place breakpoints/inspect.
