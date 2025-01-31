@@ -41,6 +41,7 @@ test('get franchise by userId', async () => {
 
 test('create franchise', async () => {
     const res = await createFakeFranchise();
+    console.log(res.body);
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('id');
 });
@@ -60,6 +61,7 @@ test('create store', async () => {
     const res2 = await request(app).post(`/api/franchise/${franchiseId}/store`)
     .set('Authorization', `Bearer ${adminAuthToken}`)
     .send({ name: randomName()});
+    console.log(res.body);
     expect(res2.status).toBe(200);
     expect(res2.body).toHaveProperty('id');
     expect(res2.body).toHaveProperty('name');
