@@ -54,7 +54,7 @@ test('delete franchise', async () => {
     expect(res2.body.message).toBe('franchise deleted');
 });
 
-test('create store', async () => {
+test('create a store', async () => {
     const res = await createFakeFranchise();
     const franchiseId = res.body.id;
     const res2 = await request(app).post(`/api/franchise/${franchiseId}/store`)
