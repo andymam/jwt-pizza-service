@@ -1,3 +1,4 @@
+/* eslint-env jest */
 const request = require('supertest');
 const app = require('../service');
 const { expectValidJwt, createAdminUser } = require('./testUtils');

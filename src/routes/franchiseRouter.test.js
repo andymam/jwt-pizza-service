@@ -1,3 +1,4 @@
+/* eslint-env jest */
 const request = require('supertest');
 const app = require('../service');
 const { expectValidJwt, randomName, createAdminUser } = require('./testUtils');
@@ -28,7 +29,6 @@ async function createFakeFranchise() {
 }
 
 test('get franchises', async () => {
-    const f = await createFakeFranchise();
     const res = await request(app).get('/api/franchise').set('Authorization', `Bearer ${adminAuthToken}`);;
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
@@ -48,8 +48,8 @@ test('create franchise', async () => {
 test('delete franchise', async () => {
     const res = await createFakeFranchise();
     const franchiseId = res.body.id;
-    const res2 = await request(app).delete(`/api/franchise/${franchiseId}`).set
-    ('Authorization', `Bearer ${adminAuthToken}`);
+    const res2 = await request(app).delete(`/api/franchise/${franchiseId}`)
+    .set('Authorization', `Bearer ${adminAuthToken}`);
     expect(res2.status).toBe(200);
     expect(res2.body.message).toBe('franchise deleted');
 });

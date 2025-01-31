@@ -1,11 +1,14 @@
+/* eslint-env jest */
 const request = require('supertest');
 const app = require('../service');
 const { StatusCodeError } = require('../endpointHelper')
-const { expectValidJwt, randomName, createAdminUser } = require('./testUtils');
+const { expectValidJwt, createAdminUser } = require('./testUtils');
 
 if (process.env.VSCODE_INSPECTOR_OPTIONS) {
     jest.setTimeout(60 * 1000 * 5); // 5 minutes
 }
+
+let adminAuthToken;
 
 beforeAll(async () => {
     // create admin
