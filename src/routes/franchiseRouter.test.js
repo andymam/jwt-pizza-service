@@ -5,6 +5,7 @@ const { expectValidJwt, randomName, createAdminUser } = require('./testUtils');
 
 let adminAuthToken;
 let testUserId = 1;
+let adminUser;
 
 if (process.env.VSCODE_INSPECTOR_OPTIONS) {
     jest.setTimeout(60 * 1000 * 5); // 5 minutes
@@ -12,7 +13,7 @@ if (process.env.VSCODE_INSPECTOR_OPTIONS) {
 
 beforeAll(async () => {
     // create admin
-    const adminUser = await createAdminUser();
+    adminUser = await createAdminUser();
     const adminLoginRes = await request(app).put('/api/auth').send({
         email: adminUser.email,
         password: 'toomanysecrets'
@@ -24,7 +25,7 @@ beforeAll(async () => {
 
 async function createFakeFranchise() {
     const res = await request(app).post('/api/franchise').set('Authorization', `Bearer ${adminAuthToken}`)
-            .send({ name: randomName(), admins: [{email: "f@jwt.com"}] });
+            .send({ name: randomName(), admins: [{email: adminUser.email}] });
     return res;
 }
 
@@ -60,7 +61,7 @@ test('create store', async () => {
     const franchiseId = res.body.id;
     const res2 = await request(app).post(`/api/franchise/${franchiseId}/store`)
     .set('Authorization', `Bearer ${adminAuthToken}`)
-    .send({ name: randomName()});
+    .send({ name: adminUser.name});
     console.log(res.body);
     expect(res2.status).toBe(200);
     expect(res2.body).toHaveProperty('id');
