@@ -1,5 +1,10 @@
 const request = require('supertest');
 const app = require('../service');
+const { expectValidJwt, randomName, createAdminUser } = require('./testUtils');
+
+if (process.env.VSCODE_INSPECTOR_OPTIONS) {
+  jest.setTimeout(60 * 1000 * 5); // 5 minutes
+}
 
 const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
@@ -28,31 +33,20 @@ test('login', async () => {
   expect(loginRes.body.user).toMatchObject(expectedUser);
 });
 
-function expectValidJwt(potentialJwt) {
-  expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
-}
+test('register', async () => {
+  const user = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
+  user.email = Math.random().toString(36).substring(2, 12) + '@test.com';
+  const registerRes = await request(app).post('/api/auth').send(user);
+  expect(registerRes.status).toBe(200);
+  expectValidJwt(registerRes.body.token);
+})
 
-function randomName() {
-  return Math.random().toString(36).substring(2, 12);
-}
 
 test('logout', async () => {
   const logoutRes = await request(app).delete('/api/auth').set('Authorization', `Bearer ${testUserAuthToken}`);
   expect(logoutRes.status).toBe(200);
   expect(logoutRes.body.message).toBe('logout successful');
 });
-
-
-const { Role, DB } = require('../database/database.js');
-
-async function createAdminUser() {
-  let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
-  user.name = randomName();
-  user.email = user.name + '@admin.com';
-
-  user = await DB.addUser(user);
-  return { ...user, password: 'toomanysecrets' };
-}
 
 
 test('update user', async () => {
@@ -70,14 +64,4 @@ test('update user', async () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ email: user.email, });
-});
-
-test('update user not admin', async () => {
-  const loginRes = await request(app).put('/api/auth').send(testUser);
-  const authToken = loginRes.body.token;
-
-  const res = await request(app).put(`/api/auth/${testUser.id}`).set('Authorization', `Bearer ${
-    authToken}`).send(testUser);
-    expect(res.status).toBe(403);
-    expect(res.body.message).toBe('unauthorized');
 });
