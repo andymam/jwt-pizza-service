@@ -27,7 +27,6 @@ async function createFakeFranchise() {
     return res;
 }
 
-
 test('get franchises', async () => {
     const f = await createFakeFranchise();
     const res = await request(app).get('/api/franchise').set('Authorization', `Bearer ${adminAuthToken}`);;
@@ -73,10 +72,10 @@ test('delete store', async () => {
         .set('Authorization', `Bearer ${adminAuthToken}`)
         .send({ name: randomName()});
     const storeId = res2.body.id;
-    const res3 = await request(app).delete(`/api/franchise/${franchiseId}/store`)
-        .set('Authorization', `Bearer ${adminAuthToken}`)
-        .send({ id: storeId });
+    const res3 = await request(app).delete(`/api/franchise/${franchiseId}/store/${storeId}`)
+        .set('Authorization', `Bearer ${adminAuthToken}`);
     expect(res3.status).toBe(200);
+    expect(res3.body.message).toBe('store deleted');
 })
 
 
