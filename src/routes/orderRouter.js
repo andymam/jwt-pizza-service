@@ -3,8 +3,11 @@ const config = require('../config.js');
 const { Role, DB } = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
+const { requestTracker } = require('../metrics');
 
 const orderRouter = express.Router();
+
+orderRouter.use(requestTracker);
 
 orderRouter.endpoints = [
   {
