@@ -104,7 +104,7 @@ orderRouter.post(
         trackCreationFailure();
         res.status(500).send({ message: 'Failed to fulfill order at factory', reportPizzaCreationErrorToPizzaFactoryUrl: j.reportUrl });
       }
-    } catch (error) {
+    } catch {
       trackCreationFailure();
       res.status(500).send({ message: 'Order creation failed' });
     }
