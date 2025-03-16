@@ -25,6 +25,7 @@ function sendMetricsPeriodically(period) {
       sendMetricToGrafana('memory', getMemoryUsagePercentage(), 'gauge', '%');
       sendMetricToGrafana('requests', requests, 'sum', '1');
       sendMetricToGrafana('latency', latency, 'sum', 'ms');
+      sendActiveUsersMetric();
     } catch (error) {
       console.log('Error sending metrics', error);
     }
@@ -83,6 +84,50 @@ function sendMetricToGrafana(metricName, metricValue, type, unit) {
 }
 
 
+let activeUsers = new Set();
+
+function trackUserLogin(userId) {
+  activeUsers.add(userId);
+  sendActiveUsersMetric();
+}
+
+function trackUserLogout(userId) {
+  activeUsers.delete(userId);
+  sendActiveUsersMetric();
+}
+
+function sendActiveUsersMetric() {
+  sendMetricToGrafana('active_users', activeUsers.size, 'gauge', 'count');
+}
+
+let authMetrics = {
+    successfulLogins: 0,
+    failedLogins: 0,
+  };
+  
+  function trackSuccessfulLogin() {
+    authMetrics.successfulLogins++;
+  }
+  
+  function trackFailedLogin() {
+    authMetrics.failedLogins++;
+  }
+  
+  function sendAuthMetrics() {
+    sendMetricToGrafana('auth_successful_attempts', authMetrics.successfulLogins, 'sum', '1');
+    sendMetricToGrafana('auth_failed_attempts', authMetrics.failedLogins, 'sum', '1');
+  
+    authMetrics.successfulLogins = 0;
+    authMetrics.failedLogins = 0;
+  }
+  
+  setInterval(sendAuthMetrics, 60 * 1000);
+  
+  module.exports = { requestTracker, sendMetricsPeriodically, trackUserLogin, trackUserLogout, trackSuccessfulLogin, trackFailedLogin };
+  
+
+
+
 let requestMetrics = {
   totalRequests: 0,
   methods: { GET: 0, POST: 0, PUT: 0, DELETE: 0 },
@@ -96,8 +141,6 @@ function requestTracker(req, res, next) {
     res.on('finish', () => {
       const [seconds, nanoseconds] = process.hrtime(start);
       const durationMs = (seconds * 1000) + (nanoseconds / 1e6);
-
-      console.log(requestMetrics.methods.GET);
         
       sendMetricToGrafana(`request_time_${req.method}`, durationMs.toFixed(2), 'sum', 'ms');
       sendMetricToGrafana(`requests_${req.method}`, requestMetrics.methods[req.method], 'sum', '1');
@@ -106,7 +149,31 @@ function requestTracker(req, res, next) {
   
     next();
   }
-  
-  
 
-module.exports = { requestTracker, sendMetricsPeriodically };
+  let pizzasSold = 0;
+let creationFailures = 0;
+let revenue = 0;
+
+function trackPizzaSale(amount) {
+  pizzasSold++;
+  revenue += amount;
+}
+
+function trackCreationFailure() {
+  creationFailures++;
+}
+
+function sendPizzaMetrics() {
+  sendMetricToGrafana('pizzas_sold_per_minute', pizzasSold, 'sum', '1');
+  sendMetricToGrafana('pizza_creation_failures_per_minute', creationFailures, 'sum', '1');
+  sendMetricToGrafana('revenue_per_minute', revenue.toFixed(4), 'sum', 'currency');
+
+  pizzasSold = 0;
+  creationFailures = 0;
+  revenue = 0;
+}
+
+setInterval(sendPizzaMetrics, 60 * 1000);
+
+  module.exports = { requestTracker, sendMetricsPeriodically, trackUserLogin, trackUserLogout, trackSuccessfulLogin, trackFailedLogin, trackPizzaSale, trackCreationFailure };
+
