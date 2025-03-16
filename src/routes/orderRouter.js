@@ -3,7 +3,7 @@ const config = require('../config.js');
 const { Role, DB } = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
-const { requestTracker, trackPizzaSale, trackCreationFailure } = require('../metrics');
+const { requestTracker, trackPizzaSale, trackCreationFailure, sendMetricToGrafana } = require('../metrics');
 
 const orderRouter = express.Router();
 
@@ -81,19 +81,35 @@ orderRouter.post(
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     const orderReq = req.body;
-    const order = await DB.addDinerOrder(req.user, orderReq);
-    const r = await fetch(`${config.factory.url}/api/order`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', authorization: `Bearer ${config.factory.apiKey}` },
-      body: JSON.stringify({ diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order }),
-    });
-    const j = await r.json();
-    if (r.ok) {
-      res.send({ order, reportSlowPizzaToFactoryUrl: j.reportUrl, jwt: j.jwt });
-    } else {
-      res.status(500).send({ message: 'Failed to fulfill order at factory', reportPizzaCreationErrorToPizzaFactoryUrl: j.reportUrl });
+    const start = process.hrtime();
+    try {
+      const order = await DB.addDinerOrder(req.user, orderReq);
+      trackPizzaSale(order.items.reduce((sum, item) => sum + item.price, 0));
+
+      const r = await fetch(`${config.factory.url}/api/order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', authorization: `Bearer ${config.factory.apiKey}` },
+        body: JSON.stringify({ diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order }),
+      });
+
+      const j = await r.json();
+      const [seconds, nanoseconds] = process.hrtime(start);
+      const durationMs = (seconds * 1000) + (nanoseconds / 1e6);
+      
+      sendMetricToGrafana('pizza_creation_latency', durationMs.toFixed(2), 'sum', 'ms');
+  
+      if (r.ok) {
+        res.send({ order, reportSlowPizzaToFactoryUrl: j.reportUrl, jwt: j.jwt });
+      } else {
+        trackCreationFailure();
+        res.status(500).send({ message: 'Failed to fulfill order at factory', reportPizzaCreationErrorToPizzaFactoryUrl: j.reportUrl });
+      }
+    } catch (error) {
+      trackCreationFailure();
+      res.status(500).send({ message: 'Order creation failed' });
     }
   })
 );
+
 
 module.exports = orderRouter;

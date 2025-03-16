@@ -121,7 +121,7 @@ let authMetrics = {
     authMetrics.failedLogins = 0;
   }
   
-  setInterval(sendAuthMetrics, 60 * 1000);
+  setInterval(sendAuthMetrics, 10 * 1000);
   
   module.exports = { requestTracker, sendMetricsPeriodically, trackUserLogin, trackUserLogout, trackSuccessfulLogin, trackFailedLogin };
   
@@ -173,7 +173,7 @@ function sendPizzaMetrics() {
   revenue = 0;
 }
 
-setInterval(sendPizzaMetrics, 60 * 1000);
+setInterval(sendPizzaMetrics, 10 * 1000);
 
-  module.exports = { requestTracker, sendMetricsPeriodically, trackUserLogin, trackUserLogout, trackSuccessfulLogin, trackFailedLogin, trackPizzaSale, trackCreationFailure };
+  module.exports = { sendMetricToGrafana, requestTracker, sendMetricsPeriodically, trackUserLogin, trackUserLogout, trackSuccessfulLogin, trackFailedLogin, trackPizzaSale, trackCreationFailure };
 
