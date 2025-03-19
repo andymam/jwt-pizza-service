@@ -44,7 +44,7 @@ class Logger {
   }
 
   sendLogToGrafana(event) {
-    console.log('Logging URL:', config.logging.url);  
+    // console.log('Logging URL:', config.logging.url);  
     const body = JSON.stringify(event);
     fetch(`${config.logging.url}`, {
       method: 'post',
@@ -54,6 +54,7 @@ class Logger {
         Authorization: `Bearer ${config.logging.userId}:${config.logging.apiKey}`,
       },
     }).then((res) => {
+        // console.log(res);
       if (!res.ok) console.log('Failed to send log to Grafana');
     });
   }

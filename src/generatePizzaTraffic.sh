@@ -22,7 +22,7 @@ trap cleanup SIGINT
 while true; do
   curl -s "$host/api/order/menu" > /dev/null
   echo "Requesting menu..."
-  sleep 3
+  sleep 30
 done &
 pid1=$!
 

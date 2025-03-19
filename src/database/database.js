@@ -293,7 +293,7 @@ class DB {
   } catch (error) {
       logger.log('error', 'database-error', { query: sql, params, message: error.message });
       throw error;
-  }
+    }
   }
 
   async getID(connection, key, value, table) {

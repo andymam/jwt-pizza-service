@@ -1,5 +1,5 @@
 const config = require('./config');
-console.log('Loaded config:', config);
+// console.log('Loaded config:', config);
 const os = require('os');
 
 let requests = 0;
