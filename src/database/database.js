@@ -285,8 +285,15 @@ class DB {
   }
 
   async query(connection, sql, params) {
-    const [results] = await connection.execute(sql, params);
-    return results;
+    const logger = require('../logger');
+    try {
+      logger.log('info', 'database', { query: sql, params });
+      const [results] = await connection.execute(sql, params);
+      return results;
+  } catch (error) {
+      logger.log('error', 'database-error', { query: sql, params, message: error.message });
+      throw error;
+  }
   }
 
   async getID(connection, key, value, table) {
