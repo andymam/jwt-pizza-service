@@ -59,4 +59,18 @@ class Logger {
     });
   }
 }
+
+Logger.prototype.errorLogger = (err, req, res, next) => {
+  const logData = {
+    path: req.originalUrl,
+    method: req.method,
+    statusCode: err.statusCode || 500,
+    message: err.message,
+  };
+
+  console.error('Captured Error:', logData);
+  new Logger().log('error', 'http', logData);
+  next(err);
+};
+
 module.exports = new Logger();

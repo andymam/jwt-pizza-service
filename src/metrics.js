@@ -161,16 +161,23 @@ function trackPizzaSale(amount) {
 
 function trackCreationFailure() {
   creationFailures++;
+  console.log(`Pizza creation failure tracked! Count: ${creationFailures}`);
 }
 
 function sendPizzaMetrics() {
+  // console.log('Sending pizza metrics to Grafana...');
   sendMetricToGrafana('pizzas_sold_per_minute', pizzasSold, 'sum', '1');
   sendMetricToGrafana('pizza_creation_failures_per_minute', creationFailures, 'sum', '1');
   sendMetricToGrafana('revenue_per_minute', revenue.toFixed(4), 'sum', 'currency');
 
-  pizzasSold = 0;
-  creationFailures = 0;
-  revenue = 0;
+  setTimeout(() => {
+    pizzasSold = 0;
+    creationFailures = 0;
+    revenue = 0;
+  }, 500);
+  // pizzasSold = 0;
+  // creationFailures = 0;
+  // revenue = 0;
 }
 
 setInterval(sendPizzaMetrics, 10 * 1000);

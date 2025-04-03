@@ -8,6 +8,7 @@ const logger = require('./logger');
 
 const app = express();
 app.use(logger.httpLogger);
+app.use(logger.errorLogger);
 app.use(express.json());
 app.use(setAuthUser);
 app.use((req, res, next) => {
