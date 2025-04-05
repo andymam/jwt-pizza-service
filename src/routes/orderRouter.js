@@ -101,6 +101,7 @@ orderRouter.post(
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     const orderReq = req.body;
+    console.log('request:', req.body);
     const start = process.hrtime();
     try {
       const order = await DB.addDinerOrder(req.user, orderReq);
@@ -113,6 +114,7 @@ orderRouter.post(
       });
 
       const j = await r.json();
+
       const [seconds, nanoseconds] = process.hrtime(start);
       const durationMs = (seconds * 1000) + (nanoseconds / 1e6);
       
@@ -121,13 +123,10 @@ orderRouter.post(
       if (r.ok) {
         res.send({ order, reportSlowPizzaToFactoryUrl: j.reportUrl, jwt: j.jwt });
       } else {
-        console.log('❌ Factory order failed! Triggering trackCreationFailure...');
         trackCreationFailure();
         res.status(500).send({ message: 'Failed to fulfill order at factory', reportPizzaCreationErrorToPizzaFactoryUrl: j.reportUrl });
       }
     } catch (err) {
-      console.error('🔥 Caught an error in order creation:', err);
-
       trackCreationFailure();
       res.status(500).send({ message: 'Order creation failed' });
     }
