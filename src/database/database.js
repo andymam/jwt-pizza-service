@@ -156,7 +156,7 @@ class DB {
       return { ...order, id: orderId };
     } catch (err) {
       await connection.rollback();
-      console.error(err);
+      console.error('DB error:', err);
       throw err;
     } finally {
       connection.end();
